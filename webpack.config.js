@@ -6,7 +6,7 @@ module.exports = [{
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'jquerySwipeHandler.js',
-    library: 'jquery-swipe-handler',
+    library: 'jquerySwipeHandler',
     libraryTarget: 'var'
   },
   module: {
