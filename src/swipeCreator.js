@@ -1,5 +1,5 @@
 /**
- * @class SwipeHandler
+ * @class SwipeCreator
  * @author Michael Breitung
  * @copyright Michael Breitung Photography (www.mibreit-photo.com)
  */
@@ -12,7 +12,7 @@ export const SWIPE_DOWN = "SWIPE_DOWN";
 const TRESHHOLD = 30;
 const MAXTIME = 1000;
 
-export default class SwipeHandler {
+export default class SwipeCreator {
   constructor(target, handlers, callback) {
     this._target = target;
     this._handlers = handlers;

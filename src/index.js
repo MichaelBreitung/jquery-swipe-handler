@@ -1,4 +1,13 @@
-import SwipeHandler from "./swipeHandler";
+import SwipeCreator
+from "./swipeCreator";
+
+export {
+  SWIPE_LEFT,
+  SWIPE_DOWN,
+  SWIPE_RIGHT,
+  SWIPE_UP
+}
+from "./swipeCreator";
 
 /**
  * 
@@ -7,5 +16,5 @@ import SwipeHandler from "./swipeHandler";
  * @param {(direction: string) => void} callback 
  */
 export function handleSwipe(target, handlers, callback) {
-  var handler = new SwipeHandler(target, handlers, callback);
+  new SwipeCreator(target, handlers, callback);
 }
