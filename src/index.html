@@ -11,7 +11,9 @@
   <script src="jquerySwipeHandler.js" type="text/javascript"></script>
   <script>
     $(document).ready(function () {
-      jquerySwipeHandler.handleSwipe("#container", ["SWIPE_LEFT", "SWIPE_RIGHT", "SWIPE_DOWN", "SWIPE_UP"],
+      jquerySwipeHandler.handleSwipe("#container", [jquerySwipeHandler.SWIPE_LEFT, jquerySwipeHandler.SWIPE_RIGHT,
+          jquerySwipeHandler.SWIPE_DOWN, jquerySwipeHandler.SWIPE_UP
+        ],
         function (
           direction) {
           console.log("swipe: ", direction);
