@@ -9,28 +9,29 @@ const MAXTIME = 1000;
 
 /**
  * @param target css id or class name
- * @param handlers array with containing selection of SWIPE_LEFT, SWIPE_RIGHT, SWIPE_UP, SWIPE_DOWN
+ * @param handlers array with containing selection of SWIPE_LEFT, SWIPE_RIGHT, SWIPE_UP, SWIPE_DOWN, CLICK
  * @param callback (direction: string, posX: ?number, posY: ?number) => void - posX and posY are only supplied on CLICK
  */
 export function handleSwipe(target, handlers, callback) {
-  let touchStartTime = undefined;
-  let touchStartX = undefined;
-  let touchStartY = undefined;
-  let targetPosition = $(target).offset();
+  touchStartTime = undefined;
+  touchStartPosition = undefined;
+  targetPosition = $(target).offset();
 
   const swipeStart = event => {
     touchStartTime = Date.now();
-    touchStartX = event.pageX;
-    touchStartY = event.pageY;
+
+    touchStartPosition = getTouchPosition(event);
   };
 
   const swipeEnd = event => {
     if (touchStartTime) {
+      const touchEndPosition = getTouchPosition(event);
+
       // only events that started within target are interesting here
       let isSwipe = false;
       if (Date.now() - touchStartTime < MAXTIME) {
-        const difX = event.pageX - touchStartX;
-        const difY = event.pageY - touchStartY;
+        const difX = touchEndPosition.x - touchStartPosition.x;
+        const difY = touchEndPosition.y - touchStartPosition.y;
 
         if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
           isSwipe = true;
@@ -53,8 +54,8 @@ export function handleSwipe(target, handlers, callback) {
         // since we listen to event on html object here, we have to subtract offset
         callback(
           CLICK,
-          event.pageX - targetPosition.left,
-          event.pageY - targetPosition.top
+          touchEndPosition.x - targetPosition.left,
+          touchEndPosition.y - targetPosition.top
         );
       }
     }
@@ -62,6 +63,19 @@ export function handleSwipe(target, handlers, callback) {
     touchStartTime = undefined;
   };
 
-  $(target).on("mousedown touchstart", swipeStart);
-  $("html").on("mouseup touchend", swipeEnd);
+  $(target).bind("mousedown touchstart", swipeStart);
+  $("html").bind("mouseup touchend", swipeEnd);
+}
+
+function getTouchPosition(event) {
+  if (event.touches && event.touches[0]) {
+    return { x: event.touches[0].pageX, y: event.touches[0].pageY };
+  } else if (event.changedTouches && event.changedTouches[0]) {
+    return {
+      x: event.changedTouches[0].pageX,
+      y: event.changedTouches[0].pageY
+    };
+  } else {
+    return { x: event.pageX, y: event.pageY };
+  }
 }
