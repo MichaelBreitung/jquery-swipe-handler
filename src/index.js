@@ -13,9 +13,9 @@ const MAXTIME = 1000;
  * @param callback (direction: string, posX: ?number, posY: ?number) => void - posX and posY are only supplied on CLICK
  */
 export function handleSwipe(target, handlers, callback) {
-  touchStartTime = undefined;
-  touchStartPosition = undefined;
-  targetPosition = $(target).offset();
+  let touchStartTime = undefined;
+  let touchStartPosition = undefined;
+  let targetPosition = $(target).offset();
 
   const swipeStart = event => {
     touchStartTime = Date.now();
