@@ -15,18 +15,15 @@ const MAXTIME = 1000;
 export function handleSwipe(target, handlers, callback) {
   let touchStartTime = undefined;
   let touchStartPosition = undefined;
-  let targetPosition = $(target).offset();
 
   const swipeStart = event => {
     touchStartTime = Date.now();
-
     touchStartPosition = getTouchPosition(event);
   };
 
   const swipeEnd = event => {
     if (touchStartTime) {
       const touchEndPosition = getTouchPosition(event);
-
       // only events that started within target are interesting here
       let isSwipe = false;
       if (Date.now() - touchStartTime < MAXTIME) {
@@ -54,8 +51,8 @@ export function handleSwipe(target, handlers, callback) {
         // since we listen to event on html object here, we have to subtract offset
         callback(
           CLICK,
-          touchEndPosition.x - targetPosition.left,
-          touchEndPosition.y - targetPosition.top
+          touchEndPosition.x - $(target).offset().left,
+          touchEndPosition.y - $(target).offset().top
         );
       }
     }
@@ -69,13 +66,19 @@ export function handleSwipe(target, handlers, callback) {
 
 function getTouchPosition(event) {
   if (event.touches && event.touches[0]) {
-    return { x: event.touches[0].pageX, y: event.touches[0].pageY };
+    return {
+      x: event.touches[0].pageX,
+      y: event.touches[0].pageY
+    };
   } else if (event.changedTouches && event.changedTouches[0]) {
     return {
       x: event.changedTouches[0].pageX,
       y: event.changedTouches[0].pageY
     };
   } else {
-    return { x: event.pageX, y: event.pageY };
+    return {
+      x: event.pageX,
+      y: event.pageY
+    };
   }
 }
