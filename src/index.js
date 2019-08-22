@@ -34,62 +34,65 @@ export function handleSwipe(target, handlers, callback) {
 
     if (touchStartTime && Date.now() - touchStartTime < MAXTIME) {
       // only events that started within target are interesting here
-
-      const touchEndPosition = getTouchPosition(event);
-      let isSwipe = false;
-
-      const difX = touchEndPosition.x - touchStartPosition.x;
-      const difY = touchEndPosition.y - touchStartPosition.y;
-
-      if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
-        isSwipe = true;
-        callback(SWIPE_RIGHT);
-      } else if (difX < -TRESHHOLD && handlers.includes(SWIPE_LEFT)) {
-        isSwipe = true;
-        callback(SWIPE_LEFT);
-      }
-
-      // we can get both a horizontal and a vertical swipe
-      if (difY > TRESHHOLD && handlers.includes(SWIPE_DOWN)) {
-        isSwipe = true;
-        callback(SWIPE_DOWN);
-      } else if (difY < -TRESHHOLD && handlers.includes(SWIPE_UP)) {
-        isSwipe = true;
-        callback(SWIPE_UP);
-      }
-
-      if (!isSwipe && handlers.includes(CLICK)) {
-        // since we listen to event on html object here, we have to subtract offset
-        callback(
-          CLICK,
-          touchEndPosition.x - $(target).offset().left,
-          touchEndPosition.y - $(target).offset().top
-        );
-      }
+      processEndEvent(getTouchPosition(event));
+      touchStartTime = undefined;
     }
-
-    touchStartTime = undefined;
   };
 
   $(target).bind("mousedown touchstart", swipeStart);
-  $("html").bind("mouseup touchend", swipeEnd);
-}
+  $(target).bind("mouseup touchend", swipeEnd);
 
-function getTouchPosition(event) {
-  if (event.touches && event.touches[0]) {
-    return {
-      x: event.touches[0].pageX,
-      y: event.touches[0].pageY
-    };
-  } else if (event.changedTouches && event.changedTouches[0]) {
-    return {
-      x: event.changedTouches[0].pageX,
-      y: event.changedTouches[0].pageY
-    };
-  } else {
-    return {
-      x: event.pageX,
-      y: event.pageY
-    };
+
+  // private methods
+  function getTouchPosition(event) {
+    if (event.touches && event.touches[0]) {
+      return {
+        x: event.touches[0].pageX,
+        y: event.touches[0].pageY
+      };
+    } else if (event.changedTouches && event.changedTouches[0]) {
+      return {
+        x: event.changedTouches[0].pageX,
+        y: event.changedTouches[0].pageY
+      };
+    } else {
+      return {
+        x: event.pageX,
+        y: event.pageY
+      };
+    }
+  }
+
+  function processEndEvent(touchEndPosition) {
+    let isSwipe = false;
+
+    const difX = touchEndPosition.x - touchStartPosition.x;
+    const difY = touchEndPosition.y - touchStartPosition.y;
+
+    if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
+      isSwipe = true;
+      callback(SWIPE_RIGHT);
+    } else if (difX < -TRESHHOLD && handlers.includes(SWIPE_LEFT)) {
+      isSwipe = true;
+      callback(SWIPE_LEFT);
+    }
+
+    // we can get both a horizontal and a vertical swipe
+    if (difY > TRESHHOLD && handlers.includes(SWIPE_DOWN)) {
+      isSwipe = true;
+      callback(SWIPE_DOWN);
+    } else if (difY < -TRESHHOLD && handlers.includes(SWIPE_UP)) {
+      isSwipe = true;
+      callback(SWIPE_UP);
+    }
+
+    if (!isSwipe && handlers.includes(CLICK)) {
+      // since we listen to event on html object here, we have to subtract offset
+      callback(
+        CLICK,
+        touchEndPosition.x - $(target).offset().left,
+        touchEndPosition.y - $(target).offset().top
+      );
+    }
   }
 }
