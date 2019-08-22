@@ -20,28 +20,62 @@ export function handleSwipe(target, handlers, callback) {
     touchStartTime = Date.now();
     touchStartPosition = getTouchPosition(event);
 
-    if (event.type == "touchstart") {
-      // prevents mousedown, which is sometimes executed in addition to touchstart
+    if (
+      event.type === "touchstart" &&
+      (handlers.includes(SWIPE_UP) || handlers.includes(SWIPE_DOWN))
+    ) {
+      // In this case the default could initiate a scroll event on the page, which
+      // would interfere with the swipe
       event.preventDefault();
     }
   };
 
   const swipeEnd = event => {
-    if (event.type == "touchend") {
-      // prevents mouseup, which is sometimes executed in addition to touchend
-      event.preventDefault();
-    }
-
     if (touchStartTime && Date.now() - touchStartTime < MAXTIME) {
-      // only events that started within target are interesting here
-      processEndEvent(getTouchPosition(event));
+      // only events that started within target are interesting here -> that's why
+      // I check touchStartTime and set it to undefined at end of method
+
+      const touchEndPosition = getTouchPosition(event);
+      const directions = detectSwipeDirections(
+        touchStartPosition,
+        touchEndPosition
+      );
+
+      let swipe = false;
+      let click = false;
+
+      for (let direction of directions) {
+        if (handlers.includes(direction)) {
+          callback(direction);
+          swipe = true;
+        }
+      }
+
+      if (!directions.length) {
+        // since we listen to event on html object here, we have to subtract offset
+        callback(
+          CLICK,
+          touchEndPosition.x - $(target).offset().left,
+          touchEndPosition.y - $(target).offset().top
+        );
+        click = true;
+      }
+
+      if (swipe || click) {
+        if (event.cancelable && event.type === "touchend") {
+          // prevents mouseup in mobile case, which is sometimes executed in addition to touchend
+          event.preventDefault();
+        }
+
+        // also stop propagation
+        event.stopPropagation();
+      }
       touchStartTime = undefined;
     }
   };
 
   $(target).bind("mousedown touchstart", swipeStart);
   $(target).bind("mouseup touchend", swipeEnd);
-
 
   // private methods
   function getTouchPosition(event) {
@@ -63,36 +97,22 @@ export function handleSwipe(target, handlers, callback) {
     }
   }
 
-  function processEndEvent(touchEndPosition) {
-    let isSwipe = false;
-
+  function detectSwipeDirections(touchStartPosition, touchEndPosition) {
     const difX = touchEndPosition.x - touchStartPosition.x;
     const difY = touchEndPosition.y - touchStartPosition.y;
-
-    if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
-      isSwipe = true;
-      callback(SWIPE_RIGHT);
-    } else if (difX < -TRESHHOLD && handlers.includes(SWIPE_LEFT)) {
-      isSwipe = true;
-      callback(SWIPE_LEFT);
+    const directions = [];
+    if (difX > TRESHHOLD) {
+      directions.push(SWIPE_RIGHT);
+    } else if (difX < -TRESHHOLD) {
+      directions.push(SWIPE_LEFT);
     }
-
     // we can get both a horizontal and a vertical swipe
-    if (difY > TRESHHOLD && handlers.includes(SWIPE_DOWN)) {
-      isSwipe = true;
-      callback(SWIPE_DOWN);
-    } else if (difY < -TRESHHOLD && handlers.includes(SWIPE_UP)) {
-      isSwipe = true;
-      callback(SWIPE_UP);
+    if (difY > TRESHHOLD) {
+      directions.push(SWIPE_DOWN);
+    } else if (difY < -TRESHHOLD) {
+      directions.push(SWIPE_UP);
     }
 
-    if (!isSwipe && handlers.includes(CLICK)) {
-      // since we listen to event on html object here, we have to subtract offset
-      callback(
-        CLICK,
-        touchEndPosition.x - $(target).offset().left,
-        touchEndPosition.y - $(target).offset().top
-      );
-    }
+    return directions;
   }
 }
