@@ -19,34 +19,45 @@ export function handleSwipe(target, handlers, callback) {
   const swipeStart = event => {
     touchStartTime = Date.now();
     touchStartPosition = getTouchPosition(event);
+
+    if (event.type == "touchstart") {
+      // prevents mousedown, which is sometimes executed in addition to touchstart
+      event.preventDefault();
+    }
   };
 
   const swipeEnd = event => {
-    if (touchStartTime) {
-      const touchEndPosition = getTouchPosition(event);
+    if (event.type == "touchend") {
+      // prevents mouseup, which is sometimes executed in addition to touchend
+      event.preventDefault();
+    }
+
+    if (touchStartTime && Date.now() - touchStartTime < MAXTIME) {
       // only events that started within target are interesting here
+
+      const touchEndPosition = getTouchPosition(event);
       let isSwipe = false;
-      if (Date.now() - touchStartTime < MAXTIME) {
-        const difX = touchEndPosition.x - touchStartPosition.x;
-        const difY = touchEndPosition.y - touchStartPosition.y;
 
-        if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
-          isSwipe = true;
-          callback(SWIPE_RIGHT);
-        } else if (difX < -TRESHHOLD && handlers.includes(SWIPE_LEFT)) {
-          isSwipe = true;
-          callback(SWIPE_LEFT);
-        }
+      const difX = touchEndPosition.x - touchStartPosition.x;
+      const difY = touchEndPosition.y - touchStartPosition.y;
 
-        // we can get both a horizontal and a vertical swipe
-        if (difY > TRESHHOLD && handlers.includes(SWIPE_DOWN)) {
-          isSwipe = true;
-          callback(SWIPE_DOWN);
-        } else if (difY < -TRESHHOLD && handlers.includes(SWIPE_UP)) {
-          isSwipe = true;
-          callback(SWIPE_UP);
-        }
+      if (difX > TRESHHOLD && handlers.includes(SWIPE_RIGHT)) {
+        isSwipe = true;
+        callback(SWIPE_RIGHT);
+      } else if (difX < -TRESHHOLD && handlers.includes(SWIPE_LEFT)) {
+        isSwipe = true;
+        callback(SWIPE_LEFT);
       }
+
+      // we can get both a horizontal and a vertical swipe
+      if (difY > TRESHHOLD && handlers.includes(SWIPE_DOWN)) {
+        isSwipe = true;
+        callback(SWIPE_DOWN);
+      } else if (difY < -TRESHHOLD && handlers.includes(SWIPE_UP)) {
+        isSwipe = true;
+        callback(SWIPE_UP);
+      }
+
       if (!isSwipe && handlers.includes(CLICK)) {
         // since we listen to event on html object here, we have to subtract offset
         callback(
