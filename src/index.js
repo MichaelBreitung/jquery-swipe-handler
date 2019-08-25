@@ -4,8 +4,8 @@ export const SWIPE_UP = "SWIPE_UP";
 export const SWIPE_DOWN = "SWIPE_DOWN";
 export const CLICK = "CLICK";
 
-const TRESHHOLD = 30;
-const MAXTIME = 1000;
+const TRESHHOLD = 50;
+const MAXTIME = 700;
 
 /**
  * @param target css id or class name
@@ -15,6 +15,7 @@ const MAXTIME = 1000;
 export function handleSwipe(target, handlers, callback) {
   let touchStartTime = undefined;
   let touchStartPosition = undefined;
+  let isWindowScroll = false;
 
   const swipeStart = event => {
     touchStartTime = Date.now();
@@ -28,13 +29,16 @@ export function handleSwipe(target, handlers, callback) {
       // would interfere with the swipe
       event.preventDefault();
     }
+
+    // detect scroll
+    isWindowScroll = false;
+    $(window).bind("scroll", windowScrollInProgress);
   };
 
   const swipeEnd = event => {
     if (touchStartTime && Date.now() - touchStartTime < MAXTIME) {
       // only events that started within target are interesting here -> that's why
       // I check touchStartTime and set it to undefined at end of method
-
       const touchEndPosition = getTouchPosition(event);
       const directions = detectSwipeDirections(
         touchStartPosition,
@@ -51,7 +55,7 @@ export function handleSwipe(target, handlers, callback) {
         }
       }
 
-      if (!directions.length) {
+      if (!directions.length && !isWindowScroll) {
         // since we listen to event on html object here, we have to subtract offset
         callback(
           CLICK,
@@ -70,8 +74,16 @@ export function handleSwipe(target, handlers, callback) {
         // also stop propagation
         event.stopPropagation();
       }
+
       touchStartTime = undefined;
     }
+
+    // unbind scroll detection
+    $(window).unbind("scroll", windowScrollInProgress);
+  };
+
+  const windowScrollInProgress = () => {
+    isWindowScroll = true;
   };
 
   $(target).bind("mousedown touchstart", swipeStart);
