@@ -15,7 +15,7 @@
   "author": "Michael Breitung",
   "license": "ISC",
   "dependencies": {
-    "jquery": "^3.4.0"
+    "jquery": "^3.5.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
