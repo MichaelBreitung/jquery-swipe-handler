@@ -6,6 +6,7 @@ export const CLICK = "CLICK";
 
 const TRESHHOLD = 50;
 const MAXTIME = 700;
+const LEFT_MOUSE_KEY = 1;
 
 /**
  * @param target css id or class name
@@ -17,7 +18,7 @@ export function handleSwipe(target, handlers, callback) {
   let touchStartPosition = undefined;
   let isWindowScroll = false;
 
-  const swipeStart = event => {
+  const swipeStart = (event) => {
     touchStartTime = Date.now();
     touchStartPosition = getTouchPosition(event);
 
@@ -35,15 +36,16 @@ export function handleSwipe(target, handlers, callback) {
     $(window).bind("scroll", windowScrollInProgress);
   };
 
-  const swipeEnd = event => {
-    if (touchStartTime && Date.now() - touchStartTime < MAXTIME) {
+  const swipeEnd = (event) => {
+    if (
+      (event.type !== "mouseup" || event.which === LEFT_MOUSE_KEY) &&
+      touchStartTime &&
+      Date.now() - touchStartTime < MAXTIME
+    ) {
       // only events that started within target are interesting here -> that's why
       // I check touchStartTime and set it to undefined at end of method
       const touchEndPosition = getTouchPosition(event);
-      const directions = detectSwipeDirections(
-        touchStartPosition,
-        touchEndPosition
-      );
+      const directions = detectSwipeDirections(touchStartPosition, touchEndPosition);
 
       let swipe = false;
       let click = false;
@@ -94,17 +96,17 @@ export function handleSwipe(target, handlers, callback) {
     if (event.touches && event.touches[0]) {
       return {
         x: event.touches[0].pageX,
-        y: event.touches[0].pageY
+        y: event.touches[0].pageY,
       };
     } else if (event.changedTouches && event.changedTouches[0]) {
       return {
         x: event.changedTouches[0].pageX,
-        y: event.changedTouches[0].pageY
+        y: event.changedTouches[0].pageY,
       };
     } else {
       return {
         x: event.pageX,
-        y: event.pageY
+        y: event.pageY,
       };
     }
   }
